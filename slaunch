@@ -1,0 +1,55 @@
+#!/bin/tcsh
+#set echo
+
+#
+# usage:
+# slaunch slurm_job.sbatch number_of_repeats
+# 
+# Launches several dependent jobs in a slurm way.
+# Also launches a sidecar job.  The intention of this is for 
+# making tar files and images.
+#
+# NOGO is a fail safe in case Enzo fails or runs successfully.
+# In either event, you need to examine the state of the code.
+#
+
+set nanny = $HOME/repos/slaunch/PlotAndTar.sbatch
+
+set job = $1
+if ( $#argv == 2 ) then
+    set number = $2
+else
+    set number = 1
+endif
+
+
+if ( ! -e $job ) then
+    echo "job not found" $job
+    exit -1
+endif
+
+if ( -e NOGO ) then
+    echo "Jobs will not launch.  NOGO present"
+    exit -1
+endif
+
+
+set count = 1
+set text = `sbatch $job`
+set dep = `echo $text |awk '{print $4}'`
+echo "Launch" $dep
+set text = `sbatch --dependency=afterany:$dep $nanny`
+set tarjob = `echo $text |awk '{print $4}'`
+echo "tar" $tarjob
+
+while ( $count < $number )
+    @ count++
+    set text = `sbatch --dependency=afterany:$dep $job`
+    set dep = `echo $text |awk '{print $4}'`
+    echo "Launch" $dep
+    set text = `sbatch --dependency=afterany:$dep $nanny`
+    set tarjob = `echo $text |awk '{print $4}'`
+    echo "tar" $tarjob
+end
+
+#end

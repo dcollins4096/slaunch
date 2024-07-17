@@ -1,0 +1,17 @@
+
+Here are some tools for keeping supercomputers busy.
+
+slaunch Job.sbatch 4
+
+will launch 4 dependent instances of Job.sbatch.
+
+It also launches a sidecar job for each one of these jobs,
+to tar the result and plot every frame you made.
+
+1.) put slaunch in your scripts directory.
+2.) Copy Job.sbatch to your run directory.  Make it work for you.
+3.) Put this repo in your repos, something like $HOME/repos/slaunch.
+4.) Edit PlotAndTar.sbatch to point to the right tarme and plotme.  Or do something different.
+5.) Feel free to make this better.
+
+

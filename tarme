@@ -1,0 +1,14 @@
+#!/bin/tcsh
+
+#tar all the ouput files from an Enzo run.  Or, anything, really.
+#You probably want to make sure every file has a start and end in the TAR_LOG
+
+
+touch TAR_LOG
+foreach i (DD????)
+    if ( ! -e $i.tar.gz ) then
+        echo "$i start" >> TAR_LOG
+        tar cvfz $i.tar.gz $i
+        echo "$i end" >> TAR_LOG
+    endif
+end

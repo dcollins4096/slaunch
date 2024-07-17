@@ -1,0 +1,25 @@
+#!/bin/tcsh
+
+set echo
+set plotdir = 'plots'
+if ( ! -e $plotdir ) mkdir $plotdir
+set dirbase = 'DD'
+set filebase = 'data'
+
+
+foreach i ( $dirbase????/$filebase???? )
+    set fname = `basename $i`
+    echo $plotdir/$fname
+    if ( ` ls $plotdir/$fname* |wc -l` >0 ) then
+        continue
+    else
+        #If more than one instance of plotme is running,
+        #this prevents them from working on the same files.
+        touch $plotdir/$fname.mine 
+       yt plot -a 0 --show-grids -o $plotdir -f density $i
+       rm $plotdir/$fname.mine
+    endif
+    
+end
+
+#end
