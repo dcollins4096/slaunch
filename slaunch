@@ -1,5 +1,5 @@
 #!/bin/tcsh
-#set echo
+set echo
 
 #
 # usage:
@@ -16,10 +16,15 @@
 set nanny = $HOME/repos/slaunch/PlotAndTar.sbatch
 
 set job = $1
-if ( $#argv == 2 ) then
+if ( $#argv >= 2 ) then
     set number = $2
 else
     set number = 1
+endif
+
+set first_dep = ""
+if ( $#argv >= 3 ) then
+    set first_dep = "--dependency=afterany:$3"
 endif
 
 
@@ -35,20 +40,19 @@ endif
 
 
 set count = 1
-set text = `sbatch $job`
-set dep = `echo $text |awk '{print $4}'`
-echo "Launch" $dep
-set text = `sbatch --dependency=afterany:$dep $nanny`
-set tarjob = `echo $text |awk '{print $4}'`
+set tmp = tmp90210
+if ( -e $tmp ) rm $tmp
+set dep = `sbatch --parsable $first_dep $job |tail -1`
+echo "Job" $dep
+
+set tarjob = `sbatch --parsable --dependency=afterany:$dep $nanny | tail -1`
 echo "tar" $tarjob
 
 while ( $count < $number )
     @ count++
-    set text = `sbatch --dependency=afterany:$dep $job`
-    set dep = `echo $text |awk '{print $4}'`
-    echo "Launch" $dep
-    set text = `sbatch --dependency=afterany:$dep $nanny`
-    set tarjob = `echo $text |awk '{print $4}'`
+    set dep = `sbatch --parsable --dependency=afterany:$dep $job |tail -1`
+    echo "Job " $dep
+    set tarjob = `sbatch --parsable --dependency=afterany:$dep $nanny |tail -1`
     echo "tar" $tarjob
 end
 
