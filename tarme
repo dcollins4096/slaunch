@@ -5,7 +5,7 @@
 
 
 touch TAR_LOG
-foreach i (DD????)
+foreach i (TT???? DD????)
     if ( ! -e $i.tar.gz ) then
         echo "$i start" >> TAR_LOG
         tar cvfz $i.tar.gz $i

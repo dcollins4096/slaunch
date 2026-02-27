@@ -15,3 +15,17 @@ to tar the result and plot every frame you made.
 5.) Feel free to make this better.
 
 
+slaunch: the launcher. Put in your path.
+Job.sbatch: put in your job site.  Edit to match your needs.  
+            This error checks so a failed enzo doesn't run 500 times.
+            Failed or completed runs write a file called NOGO
+            If NOGO is present, neither slaunch or Job.sbatch will go.
+            Keep an eye out for NOGO, it means its time to pay attention.
+PlotAndTar.sbatch: The plot and tar script. Take a look, edit to your liking.
+plotme: plots density with grid lines for every file.  
+        If you leave the plots in their directories, they won't get remade.
+        Stupid parallel, launching multiple instances of the script will 
+        not fight each other.
+tarme: the tar script.
+
+      

@@ -3,14 +3,10 @@
 set echo
 set plotdir = 'autoplots'
 if ( ! -e $plotdir ) mkdir $plotdir
-set dirbase = 'TT'
-set filebase = 'data'
 
+foreach i ( parthenon.prim.?????.phdf )
+    set fname = `basename $i .phdf`
 
-#foreach i ( $dirbase????/$filebase???? )
-foreach i ( TT????/time???? DD????/data???? )
-    set fname = `basename $i`
-    echo $plotdir/$fname
     if ( ` ls $plotdir/$fname* |wc -l` >0 ) then
         continue
     else

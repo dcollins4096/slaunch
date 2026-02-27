@@ -1,5 +1,5 @@
 #!/bin/tcsh
-set echo
+#set echo
 
 #
 # usage:
@@ -12,19 +12,64 @@ set echo
 # NOGO is a fail safe in case Enzo fails or runs successfully.
 # In either event, you need to examine the state of the code.
 #
-
-set nanny = $HOME/repos/slaunch/PlotAndTar.sbatch
+#set echo
+set sidecar = $HOME/repos/slaunch/PlotAndTar.sbatch
+#set sidecar = $HOME/repos/slaunch/PlotAthena.sbatch
+#set sidecar = $HOME/repos/slaunch/AnalysisAthena.sbatch
 
 set job = $1
-if ( $#argv >= 2 ) then
-    set number = $2
+shift
+if ( $#argv >= 0 ) then
+    set number = $1
+    shift
 else
     set number = 1
 endif
 
+set do_autodep = False
+set depend = None
+set sidecar = None
+while( $#argv )
+    switch( $1 )
+    case "-s":
+        shift
+        set sidecar = $1
+        shift
+        breaksw
+    case "--autodep":
+        set do_autodep = True
+        shift
+        breaksw
+    case "--d":
+        shift
+        set depend = $1
+        shift
+        breaksw
+    default:
+        echo "Unrecognized argument" $1
+        exit
+    
+
+    endsw
+end
+
+if ( $do_autodep == True ) then
+    set CWD = `pwd`
+    set simname = `basename $CWD`
+    set fname_list = `find . -name "$simname.o*"`
+    if ( $#fname_list > 0 ) then
+        set fname = `ls $simname.o* |sort | tail -1`
+        set jobid = `echo $fname | sed -e 's/\(.*\).o\([0-9]\+\)/\2/'`
+        if ( `showq -u |grep $jobid |wc -l` > 0 ) then
+            #job is running, set as dependency
+            set depend = $jobid
+        endif
+    endif
+endif
+
 set first_dep = ""
-if ( $#argv >= 3 ) then
-    set first_dep = "--dependency=afterany:$3"
+if ( $depend != None ) then
+    set first_dep = "--dependency=afterany:$depend"
 endif
 
 
@@ -40,19 +85,17 @@ endif
 
 
 set count = 1
-set tmp = tmp90210
-if ( -e $tmp ) rm $tmp
 set dep = `sbatch --parsable $first_dep $job |tail -1`
-echo "Job" $dep
+echo "Job" $dep $first_dep
 
-set tarjob = `sbatch --parsable --dependency=afterany:$dep $nanny | tail -1`
+set tarjob = `sbatch --parsable --dependency=afterany:$dep $sidecar | tail -1`
 echo "tar" $tarjob
 
 while ( $count < $number )
     @ count++
     set dep = `sbatch --parsable --dependency=afterany:$dep $job |tail -1`
     echo "Job " $dep
-    set tarjob = `sbatch --parsable --dependency=afterany:$dep $nanny |tail -1`
+    set tarjob = `sbatch --parsable --dependency=afterany:$dep $sidecar |tail -1`
     echo "tar" $tarjob
 end
 
